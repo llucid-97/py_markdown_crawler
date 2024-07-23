@@ -13,6 +13,17 @@ if sys.platform.startswith('win'):
 else:
     import readline
 
+def generate_tree(startpath):
+    tree = []
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, '').count(os.sep)
+        indent = '│   ' * (level - 1) + '├── ' if level > 0 else ''
+        tree.append(f"{indent}{os.path.basename(root)}/")
+        subindent = '│   ' * level + '├── '
+        for f in files:
+            tree.append(f"{subindent}{f}")
+    return '\n'.join(tree)
+
 def complete_path(text, state):
     if readline is None:
         return None
@@ -44,8 +55,11 @@ def setup_autocompletion():
         readline.set_completer(complete_path)
 
 def crawl_directory(directory):
-    markdown_content = ""
-    
+    markdown_content = "# Directory Structure\n\n"
+    markdown_content += "```\n"
+    markdown_content += generate_tree(directory)
+    markdown_content += "\n```\n\n"
+    markdown_content += "# Python File Contents\n\n"
     for root, dirs, files in os.walk(directory):
         for file in files:
             if file.endswith('.py'):
